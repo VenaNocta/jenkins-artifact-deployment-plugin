@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.artifact.deploy.repos;
+package org.jenkinsci.plugins.artifact.deployment.repos;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -65,8 +65,8 @@ import org.apache.http.message.BufferedHeader;
 import org.apache.http.util.CharArrayBuffer;
 import org.apache.http.util.EncodingUtils;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundle;
-import org.jenkinsci.plugins.artifact.deploy.steps.DeployArtifactsStep;
-import org.jenkinsci.plugins.artifact.deploy.steps.DeployArtifactsStepExecution;
+import org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStep;
+import org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStepExecution;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;

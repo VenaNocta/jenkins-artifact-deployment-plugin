@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.artifact.deploy.steps;
+package org.jenkinsci.plugins.artifact.deployment.steps;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.artifact.deploy.config.ArtifactDeployConfigurationProvider;
+import org.jenkinsci.plugins.artifact.deployment.config.ArtifactDeployConfigurationProvider;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepository;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;

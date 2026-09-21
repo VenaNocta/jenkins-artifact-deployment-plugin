@@ -26,11 +26,12 @@
 		<version>1.0.0</version>
 	</parent>
 
-	<artifactId>artifact-deploy-plugin</artifactId>
+	<groupId>org.jenkins-ci.plugins</groupId>
+	<artifactId>artifact-deployment</artifactId>
 	<version>1.0.0</version>
 	<packaging>hpi</packaging>
 
-	<name>Jenkins Artifact Deploy Plugin</name>
+	<name>Jenkins Artifact Deployment</name>
 	<url>https://github.com/RunedUniverse/jenkins-artifact-signing-plugin</url>
 	<inceptionYear>2025</inceptionYear>
 
@@ -39,9 +40,9 @@
 		<root-dir>..</root-dir>
 		<hpi.bundledArtifacts>utils-logging</hpi.bundledArtifacts>
 		<!-- VERSIONS -->
-		<sources-version>0</sources-version>
-		<lifecycle-version>0</lifecycle-version>
-		<bundle-version>0</bundle-version>
+		<sources-version>1.0.0</sources-version>
+		<lifecycle-version>1.0.0</lifecycle-version>
+		<bundle-version>1.0.0</bundle-version>
 	</properties>
 
 	<licenses>
@@ -88,14 +89,20 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jenkins-ci.plugins.artifact-signing</groupId>
-			<artifactId>artifact-lifecycle-plugin</artifactId>
-			<version>${major-version}.${minor-version}.${lifecycle-version}</version>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>artifact-lifecycle</artifactId>
+			<version>${lifecycle-version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jenkins-ci.plugins.artifact-signing</groupId>
-			<artifactId>artifact-bundle-plugin</artifactId>
-			<version>${major-version}.${minor-version}.${bundle-version}</version>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>artifact-lifecycle-maven-api</artifactId>
+			<version>${lifecycle-version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>artifact-bundle</artifactId>
+			<version>${bundle-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
@@ -165,7 +172,7 @@
 			<dependency>
 				<groupId>org.jenkins-ci.plugins.artifact-signing</groupId>
 				<artifactId>artifact-signing-sbom</artifactId>
-				<version>${major-version}.${minor-version}.${sources-version}</version>
+				<version>${sources-version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

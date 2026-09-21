@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.artifact.deploy.test;
+package org.jenkinsci.plugins.artifact.deployment.test;
 
 import hudson.model.Label;
 import java.io.IOException;

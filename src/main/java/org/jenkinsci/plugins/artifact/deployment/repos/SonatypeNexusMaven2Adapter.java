@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.artifact.deploy.repos;
+package org.jenkinsci.plugins.artifact.deployment.repos;
 
 import java.net.URI;
 import java.util.Set;
@@ -23,7 +23,6 @@ import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryAdapter
 import org.jenkinsci.plugins.artifact.lifecycle.maven.config.Maven2Repository;
 import org.jenkinsci.plugins.variant.OptionalExtension;
 
-import hudson.Extension;
 import net.runeduniverse.lib.utils.common.URIBuilder;
 
 public class SonatypeNexusMaven2Adapter implements Maven2Repository {
@@ -67,8 +66,7 @@ public class SonatypeNexusMaven2Adapter implements Maven2Repository {
 		return this.original.getCredentialId();
 	}
 
-	@Extension
-	// @OptionalExtension(requirePlugins = { "artifact-lifecycle-maven-api" })
+	@OptionalExtension(requirePlugins = { "artifact-lifecycle-maven-api" })
 	public static class Factory implements SonatypeNexusRepositoryAdapterFactory {
 
 		@Override

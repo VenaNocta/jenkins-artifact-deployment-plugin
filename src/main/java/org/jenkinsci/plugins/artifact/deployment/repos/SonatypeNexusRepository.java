@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.artifact.deploy.repos;
+package org.jenkinsci.plugins.artifact.deployment.repos;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -35,9 +35,9 @@ import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.artifact.deploy.config.DeploymentRepository;
-import org.jenkinsci.plugins.artifact.deploy.steps.ArtifactDeployExecutionFactory;
-import org.jenkinsci.plugins.artifact.deploy.steps.DeployArtifactsStep;
+import org.jenkinsci.plugins.artifact.deployment.config.DeploymentRepository;
+import org.jenkinsci.plugins.artifact.deployment.steps.ArtifactDeployExecutionFactory;
+import org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStep;
 import org.jenkinsci.plugins.artifact.lifecycle.config.AArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryDescriptor;

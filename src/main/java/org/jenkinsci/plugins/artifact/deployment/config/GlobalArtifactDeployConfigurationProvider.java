@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.artifact.deploy.config;
+package org.jenkinsci.plugins.artifact.deployment.config;
 
 import java.util.Optional;
 import java.util.UUID;
