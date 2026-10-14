@@ -103,8 +103,9 @@
 		<runeduniverse-utils-bom-version>2.0.1</runeduniverse-utils-bom-version>
 		<!-- ARTIFACT VERSIONS -->
 		<jenkins.version>2.541.1</jenkins.version>
-		<lifecycle-version>1.0-v0</lifecycle-version>
+		<identified-data-api-version>1.0-v0</identified-data-api-version>
 		<bundle-version>1.0-v0</bundle-version>
+		<lifecycle-version>1.0-v0</lifecycle-version>
 		<!-- ARTIFACT VERSIONS - COMPILER -->
 		<openjdk-min-version>${maven.compiler.release}</openjdk-min-version>
 		<plugin-revelc-formatter-version>2.23.0</plugin-revelc-formatter-version>
@@ -120,12 +121,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>artifact-lifecycle</artifactId>
+			<artifactId>identified-data-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>artifact-lifecycle-maven-api</artifactId>
-			<optional>true</optional>
+			<artifactId>artifact-lifecycle</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
@@ -165,6 +165,11 @@
 		</dependency>
 
 		<!-- OPTIONAL -->
+		<dependency>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>artifact-lifecycle-maven-api</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>cloudbees-folder</artifactId>
@@ -226,6 +231,16 @@
 			<!-- PLUGINS -->
 			<dependency>
 				<groupId>org.jenkins-ci.plugins</groupId>
+				<artifactId>identified-data-api</artifactId>
+				<version>${identified-data-api-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins</groupId>
+				<artifactId>artifact-bundle</artifactId>
+				<version>${bundle-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins</groupId>
 				<artifactId>artifact-lifecycle</artifactId>
 				<version>${lifecycle-version}</version>
 			</dependency>
@@ -234,11 +249,6 @@
 				<artifactId>artifact-lifecycle-maven-api</artifactId>
 				<version>${lifecycle-version}</version>
 				<optional>true</optional>
-			</dependency>
-			<dependency>
-				<groupId>org.jenkins-ci.plugins</groupId>
-				<artifactId>artifact-bundle</artifactId>
-				<version>${bundle-version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

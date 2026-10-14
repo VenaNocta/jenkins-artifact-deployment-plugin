@@ -29,10 +29,10 @@ import java.util.stream.Stream;
 
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.artifact.lifecycle.config.AGlobalNameResolver;
-import org.jenkinsci.plugins.artifact.lifecycle.config.IdentifiedByUUID;
-import org.jenkinsci.plugins.artifact.lifecycle.config.IdentifierUtils;
-import org.jenkinsci.plugins.artifact.lifecycle.config.NameResolver;
 import org.jenkinsci.plugins.artifact.lifecycle.ui.GlobalArtifactLifecycleConfigLink.ArtifactLifecycleCategory;
+import org.jenkinsci.plugins.identifieddata.api.IdentifiedByUUID;
+import org.jenkinsci.plugins.identifieddata.api.IdentifierUtils;
+import org.jenkinsci.plugins.identifieddata.api.NameResolver;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;

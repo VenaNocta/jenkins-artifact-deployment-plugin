@@ -15,7 +15,7 @@
  */
 package org.jenkinsci.plugins.artifact.deployment.config;
 
-import org.jenkinsci.plugins.artifact.lifecycle.config.NameResolver;
+import org.jenkinsci.plugins.identifieddata.api.NameResolver;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;

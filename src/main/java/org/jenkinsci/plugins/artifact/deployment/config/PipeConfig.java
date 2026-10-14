@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.artifact.lifecycle.config.IdentifiedByUUID;
-import org.jenkinsci.plugins.artifact.lifecycle.config.IdentifierUtils;
-import org.jenkinsci.plugins.artifact.lifecycle.config.NamedRefUUID;
-import org.jenkinsci.plugins.artifact.lifecycle.config.ReferenceableByName;
+import org.jenkinsci.plugins.identifieddata.api.IdentifiedByUUID;
+import org.jenkinsci.plugins.identifieddata.api.IdentifierUtils;
+import org.jenkinsci.plugins.identifieddata.api.NamedRefUUID;
+import org.jenkinsci.plugins.identifieddata.api.ReferenceableByName;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
