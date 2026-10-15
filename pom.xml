@@ -23,7 +23,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>6.2152.ve00a_731c3ce9</version>
+		<version>6.2236.v12dd4c483242</version>
 	</parent>
 
 	<groupId>org.jenkins-ci.plugins</groupId>
@@ -93,16 +93,16 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<root-dir>${basedir}</root-dir>
-		<hpi.bundledArtifacts>utils-logging</hpi.bundledArtifacts>
+		<hpi.bundledArtifacts>utils-common,utils-common-api,utils-logging</hpi.bundledArtifacts>
 		<!-- VERSIONS -->
 		<revision>1.0</revision>
 		<changelist>0</changelist>
 		<!-- ARTIFACT VERSIONS - BOMs -->
-		<jenkins-tools-bom-version>2.555.x</jenkins-tools-bom-version>
-		<jenkins-tools-bom-patch>6269.v7a_159d68a_366</jenkins-tools-bom-patch>
+		<jenkins-tools-bom-version>2.580.x</jenkins-tools-bom-version>
+		<jenkins-tools-bom-patch>7169.vb_32a_cfd93fa_6</jenkins-tools-bom-patch>
 		<runeduniverse-utils-bom-version>2.0.1</runeduniverse-utils-bom-version>
 		<!-- ARTIFACT VERSIONS -->
-		<jenkins.version>2.541.1</jenkins.version>
+		<jenkins.version>2.568.3</jenkins.version>
 		<identified-data-api-version>1.0-v0</identified-data-api-version>
 		<bundle-version>1.0-v0</bundle-version>
 		<lifecycle-version>1.0-v0</lifecycle-version>
