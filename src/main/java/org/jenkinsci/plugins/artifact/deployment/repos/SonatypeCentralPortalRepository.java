@@ -30,14 +30,10 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.artifact.deployment.config.DeploymentRepository;
-import org.jenkinsci.plugins.artifact.deployment.steps.ArtifactDeployExecutionFactory;
-import org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStep;
 import org.jenkinsci.plugins.artifact.lifecycle.config.AArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryDescriptor;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryTypeProvider;
-import org.jenkinsci.plugins.workflow.steps.StepContext;
-import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
@@ -275,17 +271,6 @@ public class SonatypeCentralPortalRepository extends AArtifactRepository impleme
 			if (SonatypeCentralPortalRepository.isSupported(repository))
 				return Set.of("ST:Central-Portal");
 			return Set.of();
-		}
-	}
-
-	@Extension
-	public static class SonatypeCentralPortalFactory
-			extends ArtifactDeployExecutionFactory<SonatypeCentralPortalRepository> {
-
-		@Override
-		public StepExecution create(StepContext context, DeployArtifactsStep step, SonatypeCentralPortalRepository repo)
-				throws Exception {
-			return new SonatypeMavenCentralDeployExecution(context, step, repo);
 		}
 	}
 }

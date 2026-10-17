@@ -17,8 +17,12 @@ package org.jenkinsci.plugins.artifact.deployment.config;
 
 import java.io.Serializable;
 
+import org.jenkinsci.plugins.artifact.deployment.steps.CpsDeployTask;
+
+import hudson.ExtensionPoint;
 import hudson.model.Describable;
 
-public interface DeploymentTask extends Describable<DeploymentTask>, Serializable {
+public interface DeploymentTask extends Describable<DeploymentTask>, ExtensionPoint, Serializable {
 
+	public CpsDeployTask buildCpsTask();
 }

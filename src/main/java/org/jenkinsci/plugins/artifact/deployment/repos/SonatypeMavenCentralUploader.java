@@ -65,10 +65,7 @@ import org.apache.http.message.BufferedHeader;
 import org.apache.http.util.CharArrayBuffer;
 import org.apache.http.util.EncodingUtils;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundle;
-import org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStep;
-import org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStepExecution;
-import org.jenkinsci.plugins.workflow.steps.StepContext;
-
+import org.jenkinsci.plugins.artifact.deployment.steps.ACpsDeployTask;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -82,7 +79,7 @@ import net.runeduniverse.lib.utils.logging.log.DefaultCompoundTree;
 import net.runeduniverse.lib.utils.logging.log.api.CompoundTree;
 import net.runeduniverse.lib.utils.logging.log.api.CompoundTreeStyle;
 
-public class SonatypeMavenCentralDeployExecution extends DeployArtifactsStepExecution<SonatypeCentralPortalRepository> {
+public class SonatypeMavenCentralUploader extends ACpsDeployTask {
 
 	public static final String[] OPTION_PUBLISHING_TYPE = //
 			new String[] { "publishing.type", "publishing.mode" };
@@ -119,11 +116,17 @@ public class SonatypeMavenCentralDeployExecution extends DeployArtifactsStepExec
 
 	private static final long serialVersionUID = 1L;
 
+	protected final SonatypeCentralPortalRepository repoConfig;
+
 	private CompoundTreeStyle style = null;
 
-	protected SonatypeMavenCentralDeployExecution(final StepContext context, final DeployArtifactsStep step,
-			final SonatypeCentralPortalRepository repo) {
-		super(context, step, repo);
+	public SonatypeMavenCentralUploader(final SonatypeCentralPortalRepository repo) {
+		this.repoConfig = repo;
+	}
+
+	@Override
+	public String getDisplayName() {
+		return "Deploy: Sonatype Central-Portal";
 	}
 
 	protected boolean ignoreMissingArtifacts() {
@@ -131,9 +134,8 @@ public class SonatypeMavenCentralDeployExecution extends DeployArtifactsStepExec
 	}
 
 	protected String getPublishingType() {
-		final SonatypeCentralPortalRepository repoConfig = getRepoConfig();
-		final String defaultValue = StringUtils.trimToNull(repoConfig.getPublishingType());
-		String selected = getEntryString(this.step.getOptions(), OPTION_PUBLISHING_TYPE);
+		final String defaultValue = StringUtils.trimToNull(this.repoConfig.getPublishingType());
+		String selected = getEntryString(getOptions(), OPTION_PUBLISHING_TYPE);
 		// when null, select default value
 		if (selected == null)
 			selected = defaultValue;
@@ -141,7 +143,7 @@ public class SonatypeMavenCentralDeployExecution extends DeployArtifactsStepExec
 		if (selected == null)
 			return SonatypeCentralPortalRepository.PUBLISHING_TYPE__USER_MANAGED;
 		// check if AUTOMATIC is enabled, reset in case it is disabled & selected
-		if (!repoConfig.getAllowAutoPublish()
+		if (!this.repoConfig.getAllowAutoPublish()
 				&& SonatypeCentralPortalRepository.PUBLISHING_TYPE__AUTOMATIC.equals(selected)) {
 			if (SonatypeCentralPortalRepository.PUBLISHING_TYPE__AUTOMATIC.equals(defaultValue))
 				return SonatypeCentralPortalRepository.PUBLISHING_TYPE__USER_MANAGED;
@@ -151,14 +153,14 @@ public class SonatypeMavenCentralDeployExecution extends DeployArtifactsStepExec
 	}
 
 	protected long getValidationRetries() {
-		final Number selected = getEntry(this.step.getOptions(), Number.class, OPTION_VALIDATION_RETRIES);
+		final Number selected = getEntry(getOptions(), Number.class, OPTION_VALIDATION_RETRIES);
 		if (selected == null)
 			return DEFAULT_OPTION_VALIDATION_RETRIES;
 		return selected.longValue();
 	}
 
 	protected long getValidationTimeout() {
-		final Number selected = getEntry(this.step.getOptions(), Number.class, OPTION_VALIDATION_TIMEOUT);
+		final Number selected = getEntry(getOptions(), Number.class, OPTION_VALIDATION_TIMEOUT);
 		if (selected == null)
 			return DEFAULT_OPTION_VALIDATION_TIMEOUT;
 		return selected.longValue();
@@ -166,10 +168,10 @@ public class SonatypeMavenCentralDeployExecution extends DeployArtifactsStepExec
 
 	protected void useCreds(Function<StandardUsernamePasswordCredentials, Boolean> consumer)
 			throws IOException, InterruptedException {
-		final String credentialsId = repoConfig.getCredentialId();
-		if (credentialsId == null)
+		final String credentialId = repoConfig.getCredentialId();
+		if (credentialId == null)
 			return;
-		super.useCreds(StandardUsernamePasswordCredentials.class, credentialsId, consumer);
+		super.useCreds(StandardUsernamePasswordCredentials.class, credentialId, consumer);
 	}
 
 	protected CompoundTreeStyle getStyle() {
@@ -210,9 +212,8 @@ public class SonatypeMavenCentralDeployExecution extends DeployArtifactsStepExec
 	}
 
 	@Override
-	public boolean start() throws Exception {
-		final SonatypeCentralPortalRepository repoConfig = getRepoConfig();
-		final Bundle bundle = getSelectedBundle();
+	public boolean run() throws Exception {
+		final Bundle bundle = getBundle();
 
 		if (bundle.isEmpty()) {
 			log(Level.WARNING, "Skipping upload on empty Bundle!", null);
@@ -353,7 +354,7 @@ public class SonatypeMavenCentralDeployExecution extends DeployArtifactsStepExec
 		}
 		// validate namespace
 		{
-			final String namespace = getRepoConfig().getNamespace();
+			final String namespace = this.repoConfig.getNamespace();
 			for (Iterator<String> i = artifactsByGroupId.keySet()
 					.iterator(); i.hasNext();) {
 				final String groupId = i.next();
@@ -734,5 +735,4 @@ public class SonatypeMavenCentralDeployExecution extends DeployArtifactsStepExec
 			return null;
 		return node.asText();
 	}
-
 }

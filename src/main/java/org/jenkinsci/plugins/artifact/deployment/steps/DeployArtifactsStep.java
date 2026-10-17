@@ -15,14 +15,31 @@
  */
 package org.jenkinsci.plugins.artifact.deployment.steps;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.artifact.deployment.config.ArtifactDeployConfigurationProvider;
-import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepository;
+import org.jenkinsci.plugins.artifact.bundle.context.Bundle;
+import org.jenkinsci.plugins.artifact.bundle.context.BundleContext;
+import org.jenkinsci.plugins.artifact.bundle.context.Bundles;
+import org.jenkinsci.plugins.artifact.bundle.steps.BundleStepExecution;
+import org.jenkinsci.plugins.artifact.deployment.config.DeploymentPipeIndex;
+import org.jenkinsci.plugins.artifact.deployment.config.DeploymentTask;
+import org.jenkinsci.plugins.artifact.deployment.config.PipeConfig;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
+import org.jenkinsci.plugins.workflow.cps.CpsStepContext;
+import org.jenkinsci.plugins.workflow.cps.CpsThread;
+import org.jenkinsci.plugins.workflow.cps.CpsThreadGroup;
+import org.jenkinsci.plugins.workflow.steps.BodyExecution;
+import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
@@ -33,20 +50,27 @@ import org.kohsuke.stapler.DataBoundSetter;
 import com.google.common.collect.ImmutableSet;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import groovy.lang.Script;
+import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import jenkins.model.ArtifactManager;
 
 public class DeployArtifactsStep extends Step implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	public static final String GROOVY_SCRIPT__DEPLOY_PIPE_BODY = "DeployPipeBody.groovy";
+	public static final String GROOVY_VAR__PIPE_TASKS = "deploymentPipeTasks";
+
 	private final Map<String, Serializable> options = new ConcurrentHashMap<>();
 	private final Map<String, Serializable> metadata = new ConcurrentHashMap<>();
 
-	private String repo = null;
+	private String pipe = null;
 
 	/**
 	 * Comma- or space-separated list of patterns of files/directories to be
@@ -57,12 +81,12 @@ public class DeployArtifactsStep extends Step implements Serializable {
 	private String bundle = null;
 
 	@DataBoundConstructor
-	public DeployArtifactsStep(final String repo) {
-		this.repo = StringUtils.trimToNull(repo);
+	public DeployArtifactsStep(final String pipe) {
+		this.pipe = Util.fixEmptyAndTrim(pipe);
 	}
 
-	public String getRepo() {
-		return repo;
+	public String getPipe() {
+		return this.pipe;
 	}
 
 	public String getArtifacts() {
@@ -79,6 +103,13 @@ public class DeployArtifactsStep extends Step implements Serializable {
 
 	public String getBundle() {
 		return bundle;
+	}
+
+	@DataBoundSetter
+	// backward compatibility
+	@Deprecated(forRemoval = true)
+	public void setRepo(final String repo) {
+		this.pipe = Util.fixEmptyAndTrim(repo);
 	}
 
 	@DataBoundSetter
@@ -109,28 +140,114 @@ public class DeployArtifactsStep extends Step implements Serializable {
 
 	@Override
 	public StepExecution start(final StepContext context) throws Exception {
-		final ArtifactRepository repo = ArtifactDeployConfigurationProvider.findRepoByName(context.get(Run.class),
-				this.repo);
-		if (repo == null)
+		final PipeConfig pipe = DeploymentPipeIndex.getResolver()
+				.findEntryByName(context.get(Run.class)
+						.getParent(), this.pipe);
+		if (pipe == null)
 			return new InvalidStepExecution(context) {
 				private static final long serialVersionUID = 1L;
 
 				protected void log(TaskListener listener) {
-					listener.error("Repository (%s) not available!", DeployArtifactsStep.this.getRepo());
+					listener.error(Messages.DeployArtifacts_Exec_ERR_PipeNotFound(DeployArtifactsStep.this.pipe));
 				}
 			};
-		final ArtifactDeployExecutionFactory<?> factory = ArtifactDeployExecutionFactory.get(repo.getClass());
-		if (factory == null)
-			return new InvalidStepExecution(context) {
-				private static final long serialVersionUID = 1L;
 
-				@Override
-				protected void log(TaskListener listener) {
-					listener.fatalError("Repository of (%s) has no valid factory instance!",
-							DeployArtifactsStep.this.getRepo());
+		return new Execution(context, this, pipe);
+	}
+
+	public static final class Execution extends BundleStepExecution {
+
+		private static final long serialVersionUID = 1L;
+
+		private final DeployArtifactsStep step;
+		private final PipeConfig pipe;
+
+		protected BodyExecution cpsBody = null;
+
+		protected Execution(final StepContext context, final DeployArtifactsStep step, final PipeConfig pipe) {
+			super(context);
+			this.step = step;
+			this.pipe = pipe;
+		}
+
+		@NonNull
+		protected Bundle getSelectedBundle() throws IOException, InterruptedException {
+			final String artifacts = getArtifactPaths(this.step.getArtifacts());
+			final BundleContext context = getBundleContext();
+			Bundle bundle = context == null ? null : context.getBundle(this.step.getBundle());
+
+			if (artifacts != null) {
+				if (bundle == null)
+					// create anonymous Bundle
+					bundle = new Bundle(null);
+				else
+					bundle = bundle.copy();
+
+				final ArtifactManager artifactManager = getRun().pickArtifactManager();
+				Bundles.indexArtifacts(bundle, artifactManager, artifacts, null, true, this.step.getMetadata());
+			}
+			// if nothing special is selected, return "default" Bundle
+			return bundle == null ? (context == null ? new Bundle(null) : context.getBundle()) : bundle;
+		}
+
+		@Override
+		public boolean start() throws Exception {
+			if (!(getContext() instanceof CpsStepContext)) {
+				throw new IllegalStateException("deployArtifacts requires workflow-cps");
+			}
+			final CpsStepContext context = (CpsStepContext) getContext();
+			final CpsThread thread = CpsThread.current();
+			if (thread == null) {
+				throw new IllegalStateException("No current CPS thread");
+			}
+
+			final CpsThreadGroup group = thread.getGroup();
+			final CpsFlowExecution execution = thread.getExecution();
+
+			final List<CpsDeployTask> tasks = new ArrayList<>();
+
+			for (DeploymentTask taskConfig : this.pipe.getTasks()) {
+				final CpsDeployTask task = taskConfig.buildCpsTask();
+				if (task == null) {
+					throw new AbortException(
+							Messages.DeployArtifacts_Exec_ERR_DeploymentTaskNoCpsTask(taskConfig.getDescriptor()
+									.getDisplayName()));
 				}
-			};
-		return factory.newDeployStepExecution(context, this, repo);
+				tasks.add(task);
+			}
+
+			final InputStream resource = getClass().getResourceAsStream(GROOVY_SCRIPT__DEPLOY_PIPE_BODY);
+			if (resource == null) {
+				throw new IllegalStateException("Missing " + GROOVY_SCRIPT__DEPLOY_PIPE_BODY);
+			}
+
+			final Script body;
+			try (InputStreamReader reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
+				body = execution.getShell()
+						.parse(reader, GROOVY_SCRIPT__DEPLOY_PIPE_BODY);
+			}
+
+			// Internal script variables; never populate the Jenkinsfile's
+			// binding with the deployment task list.
+			body.getBinding()
+					.setVariable(GROOVY_VAR__PIPE_TASKS, tasks);
+
+			final DeploymentExecData data = new DeploymentExecData( //
+					this.pipe.getUuid(), this.step.getOptions(), getSelectedBundle());
+
+			this.cpsBody = context.newBodyInvoker(group.export(body), true)
+					.withContext(data)
+					.withCallback(BodyExecutionCallback.wrap(getContext()))
+					.start();
+			return false;
+		}
+
+		@Override
+		public void stop(final Throwable cause) throws Exception {
+			if (this.cpsBody != null)
+				this.cpsBody.cancel(cause);
+			super.stop(cause);
+		}
 	}
 
 	public abstract static class InvalidStepExecution extends StepExecution {

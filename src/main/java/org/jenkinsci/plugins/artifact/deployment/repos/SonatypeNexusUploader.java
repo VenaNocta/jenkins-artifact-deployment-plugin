@@ -53,10 +53,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundle;
-import org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStep;
-import org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStepExecution;
-import org.jenkinsci.plugins.workflow.steps.StepContext;
-
+import org.jenkinsci.plugins.artifact.deployment.steps.ACpsDeployTask;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -68,7 +65,7 @@ import hudson.model.Result;
 import jenkins.util.VirtualFile;
 import net.runeduniverse.lib.utils.common.URIBuilder;
 
-public class SonatypeNexusDeployExecution extends DeployArtifactsStepExecution<SonatypeNexusRepository> {
+public class SonatypeNexusUploader extends ACpsDeployTask {
 
 	public static final String[] METADATA_MAVEN2_GROUPID = //
 			new String[] { "maven2.groupId", "maven.groupId", "groupId" };
@@ -83,23 +80,28 @@ public class SonatypeNexusDeployExecution extends DeployArtifactsStepExecution<S
 
 	private static final long serialVersionUID = 1L;
 
-	protected SonatypeNexusDeployExecution(final StepContext context, final DeployArtifactsStep step,
-			final SonatypeNexusRepository repo) {
-		super(context, step, repo);
+	protected final SonatypeNexusRepository repoConfig;
+
+	public SonatypeNexusUploader(final SonatypeNexusRepository repoConfig) {
+		this.repoConfig = repoConfig;
+	}
+
+	@Override
+	public String getDisplayName() {
+		return "Deploy: Sonatype Nexus Repository [" + this.repoConfig.getRepo() + "]";
 	}
 
 	protected void useCreds(Function<StandardUsernamePasswordCredentials, Boolean> consumer)
 			throws IOException, InterruptedException {
-		final String credentialsId = repoConfig.getCredentialId();
+		final String credentialsId = this.repoConfig.getCredentialId();
 		if (credentialsId == null)
 			return;
 		super.useCreds(StandardUsernamePasswordCredentials.class, credentialsId, consumer);
 	}
 
 	@Override
-	public boolean start() throws Exception {
-		final SonatypeNexusRepository repoConfig = getRepoConfig();
-		final Bundle bundle = getSelectedBundle();
+	public boolean run() throws Exception {
+		final Bundle bundle = getBundle();
 
 		if (bundle.isEmpty()) {
 			log(Level.WARNING, "Skipping upload on empty Bundle!", null);
@@ -107,11 +109,15 @@ public class SonatypeNexusDeployExecution extends DeployArtifactsStepExecution<S
 			return true;
 		}
 
-		final String repo = StringUtils.trimToNull(repoConfig.getRepo());
+		final String repo = StringUtils.trimToNull(this.repoConfig.getRepo());
 		if (repo == null)
-			throw new AbortException("Namespace not set!");
+			throw new AbortException("Repository not selected!");
 
-		final URIBuilder uriBuilder = new URIBuilder(repoConfig.getUri()).appendPath("/service/rest/");
+		if (!this.repoConfig.hasDeploymentSupport())
+			throw new AbortException(
+					"The selected Repository (" + this.repoConfig.getRepo() + ") does not allow uploads!");
+
+		final URIBuilder uriBuilder = new URIBuilder(this.repoConfig.getUri()).appendPath("/service/rest/");
 		final URI uri;
 		try {
 			uri = uriBuilder.toURI();
@@ -239,7 +245,7 @@ public class SonatypeNexusDeployExecution extends DeployArtifactsStepExecution<S
 	protected void uploadMavenBundle(final HttpClient client, final HttpClientContext context,
 			final URIBuilder uriBuilder, final Bundle bundle) throws URISyntaxException, AbortException {
 		final URI uri = uriBuilder.withChildPath("v1/components")
-				.setQuery("repository=" + getRepoConfig().getRepo())
+				.setQuery("repository=" + this.repoConfig.getRepo())
 				.toURI();
 		final Set<Map.Entry<VirtualFile, Map<String, Serializable>>> invalidArtifacts = new LinkedHashSet<>();
 
