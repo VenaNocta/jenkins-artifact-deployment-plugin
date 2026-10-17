@@ -67,7 +67,7 @@ public class SonatypeCentralPortalUploadTask implements DeploymentTask {
 
 	@Override
 	public CpsDeployTask buildCpsTask() {
-		return new SonatypeMavenCentralUploader(getRepo());
+		return new SonatypeCentralPortalUploader(getRepo());
 	}
 
 	@Extension

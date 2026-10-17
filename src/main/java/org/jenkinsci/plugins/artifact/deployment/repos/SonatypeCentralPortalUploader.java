@@ -79,7 +79,7 @@ import net.runeduniverse.lib.utils.logging.log.DefaultCompoundTree;
 import net.runeduniverse.lib.utils.logging.log.api.CompoundTree;
 import net.runeduniverse.lib.utils.logging.log.api.CompoundTreeStyle;
 
-public class SonatypeMavenCentralUploader extends ACpsDeployTask {
+public class SonatypeCentralPortalUploader extends ACpsDeployTask {
 
 	public static final String[] OPTION_PUBLISHING_TYPE = //
 			new String[] { "publishing.type", "publishing.mode" };
@@ -120,7 +120,7 @@ public class SonatypeMavenCentralUploader extends ACpsDeployTask {
 
 	private CompoundTreeStyle style = null;
 
-	public SonatypeMavenCentralUploader(final SonatypeCentralPortalRepository repo) {
+	public SonatypeCentralPortalUploader(final SonatypeCentralPortalRepository repo) {
 		this.repoConfig = repo;
 	}
 
