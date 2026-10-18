@@ -1,0 +1,25 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form"
+	xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+	<!-- page -->
+	<div style="display:flex; gap:20px; width:100%;">
+		<div style="flex:0 0 auto; min-width:25%">
+			<f:entry title="Variable" field="key">
+				<f:textbox />
+			</f:entry>
+		</div>
+		<div style="flex:1; min-width:0;">
+			<f:entry title="Metadata Keys">
+				<div
+					style="display:flex; flex-wrap:wrap; gap:6px; border:2px solid #ccc; border-radius:8px; padding:2px 6px;">
+					<j:forEach var="value" items="${descriptor.metaKeys}">
+						<span
+							style="border:2px solid #ccc; border-radius:8px; padding:2px 6px; color:#888; white-space:nowrap;">
+							${value}
+						</span>
+					</j:forEach>
+				</div>
+			</f:entry>
+		</div>
+	</div>
+</j:jelly>

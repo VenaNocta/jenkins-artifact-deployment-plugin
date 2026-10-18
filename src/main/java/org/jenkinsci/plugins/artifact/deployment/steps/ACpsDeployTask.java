@@ -21,12 +21,17 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
@@ -34,6 +39,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundle;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundles;
+import org.jenkinsci.plugins.artifact.deployment.tasks.MetadataEntry;
 import org.jenkinsci.plugins.workflow.actions.TagsAction;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -235,6 +241,40 @@ public abstract class ACpsDeployTask implements CpsDeployTask {
 
 	protected String getEntryString(final Map<String, Serializable> metadata, final String... keys) {
 		return StringUtils.trimToNull(getEntry(metadata, String.class, keys));
+	}
+
+	protected Map<String, Serializable> resolveEntryData(final List<MetadataEntry> entries,
+			final Map<String, Serializable> metadata) {
+		final Map<String, Serializable> data = new LinkedHashMap<>();
+		for (MetadataEntry ref : entries) {
+			for (String key : ref.getMetaKeys()) {
+				Serializable obj = metadata.get(key);
+				if (obj != null) {
+					if (obj instanceof String s)
+						obj = s.trim();
+					data.putIfAbsent(key, obj);
+					break;
+				}
+			}
+		}
+		return data;
+	}
+
+	public static final Pattern PLACEHOLDER = Pattern.compile("\\$\\{\\s*([^}]+?)\\s*}");
+
+	protected String resolveText(final Map<String, Serializable> metadata, final String template) {
+		final Matcher matcher = PLACEHOLDER.matcher(template);
+		final StringBuffer result = new StringBuffer();
+
+		while (matcher.find()) {
+			final String key = matcher.group(1)
+					.trim();
+			final String value = String.valueOf(metadata.getOrDefault(key, ""));
+			matcher.appendReplacement(result, Matcher.quoteReplacement(value));
+		}
+
+		matcher.appendTail(result);
+		return result.toString();
 	}
 
 	protected String fullPath(final VirtualFile root, final VirtualFile file) {

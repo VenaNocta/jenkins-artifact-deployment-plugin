@@ -28,5 +28,4 @@ public interface CpsDeployTask extends Serializable {
 	public default void stop(final Throwable cause) throws Exception {
 		// override for block tasks otherwise ignore? ¯\_(ツ)_/¯
 	}
-
 }

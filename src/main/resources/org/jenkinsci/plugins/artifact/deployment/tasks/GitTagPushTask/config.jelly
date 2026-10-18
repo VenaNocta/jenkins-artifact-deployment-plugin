@@ -1,0 +1,36 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form"
+	xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+	<!-- page -->
+	<f:entry title="Force Push" field="force">
+		<f:checkbox default="true" />
+	</f:entry>
+	<div style="display:flex; gap:20px; width:100%;">
+		<div style="flex:0 0 auto; min-width:40%">
+			<f:entry title="Trigger Key" field="triggerKey">
+				<f:textbox />
+			</f:entry>
+		</div>
+		<div style="flex:1; min-width:0;">
+			<f:entry title="Trigger Regex" field="triggerValueRegex">
+				<f:textbox />
+			</f:entry>
+		</div>
+	</div>
+	<div style="display:flex; gap:20px; width:100%;">
+		<div style="flex:0 0 auto; min-width:40%">
+			<f:entry title="Tag Template" field="tag">
+				<f:textbox />
+			</f:entry>
+		</div>
+		<div style="flex:1; min-width:0;">
+			<f:entry title="Comment Template" field="comment">
+				<f:textbox />
+			</f:entry>
+		</div>
+	</div>
+	<f:entry title="Artifact Metadata Variable-Mapping">
+		<f:repeatableHeteroProperty field="entries"
+			hasHeader="true" />
+	</f:entry>
+</j:jelly>
