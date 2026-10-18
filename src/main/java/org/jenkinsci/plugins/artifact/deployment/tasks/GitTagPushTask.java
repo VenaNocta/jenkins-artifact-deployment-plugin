@@ -197,6 +197,7 @@ public class GitTagPushTask implements DeploymentTask {
 				final Map<String, Serializable> metadata = entry.getValue();
 				handleArtifact(entry.getKey(), resolveEntryData(this.entries, metadata), gitScm);
 			}
+			ctx.onSuccess(null);
 			return true;
 		}
 
