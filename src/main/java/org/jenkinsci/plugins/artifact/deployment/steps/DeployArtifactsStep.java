@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundle;
 import org.jenkinsci.plugins.artifact.bundle.context.BundleContext;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundles;
@@ -50,6 +51,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import com.google.common.collect.ImmutableSet;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -65,6 +67,7 @@ public class DeployArtifactsStep extends Step implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public static final String GROOVY_SCRIPT__DEPLOY_PIPE_BODY = "DeployPipeBody.groovy";
+	public static final String GROOVY_SCRIPT__DEPLOY_PIPE_CLASS = "org_jenkinsci_plugins_artifact_deployment_steps_DeployPipeBody";
 	public static final String GROOVY_VAR__PIPE_TASKS = "deploymentPipeTasks";
 
 	private final Map<String, Serializable> options = new ConcurrentHashMap<>();
@@ -155,6 +158,28 @@ public class DeployArtifactsStep extends Step implements Serializable {
 		return new Execution(context, this, pipe);
 	}
 
+	public static Script loadScript(final CpsFlowExecution execution) throws IllegalStateException, IOException {
+		final GroovyShell shell = execution.getShell();
+
+		synchronized (shell) {
+			try {
+				final Class<?> scriptClass = shell.getClassLoader()
+						.loadClass(GROOVY_SCRIPT__DEPLOY_PIPE_CLASS);
+				return InvokerHelper.createScript(scriptClass, shell.getContext());
+			} catch (ClassNotFoundException e) {
+				// Not loaded yet; compile it below.
+			}
+
+			final InputStream resource = DeployArtifactsStep.class.getResourceAsStream(GROOVY_SCRIPT__DEPLOY_PIPE_BODY);
+			if (resource == null)
+				throw new IllegalStateException("Missing " + GROOVY_SCRIPT__DEPLOY_PIPE_BODY);
+
+			try (InputStreamReader reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
+				return shell.parse(reader, GROOVY_SCRIPT__DEPLOY_PIPE_CLASS);
+			}
+		}
+	}
+
 	public static final class Execution extends BundleStepExecution {
 
 		private static final long serialVersionUID = 1L;
@@ -215,16 +240,7 @@ public class DeployArtifactsStep extends Step implements Serializable {
 				tasks.add(task);
 			}
 
-			final InputStream resource = getClass().getResourceAsStream(GROOVY_SCRIPT__DEPLOY_PIPE_BODY);
-			if (resource == null) {
-				throw new IllegalStateException("Missing " + GROOVY_SCRIPT__DEPLOY_PIPE_BODY);
-			}
-
-			final Script body;
-			try (InputStreamReader reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
-				body = execution.getShell()
-						.parse(reader, GROOVY_SCRIPT__DEPLOY_PIPE_BODY);
-			}
+			final Script body = loadScript(execution);
 
 			// Internal script variables; never populate the Jenkinsfile's
 			// binding with the deployment task list.

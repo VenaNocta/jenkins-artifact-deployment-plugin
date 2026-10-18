@@ -1,4 +1,1 @@
-for (def task : deploymentPipeTasks) {
-	execDeployTask(task)
-}
-return null;
+deploymentPipeTasks.each { execDeployTask(it) }

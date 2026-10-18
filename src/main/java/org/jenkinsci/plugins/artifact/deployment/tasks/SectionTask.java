@@ -15,9 +15,6 @@
  */
 package org.jenkinsci.plugins.artifact.deployment.tasks;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -25,6 +22,7 @@ import java.util.List;
 
 import org.jenkinsci.plugins.artifact.deployment.steps.ACpsDeployTask;
 import org.jenkinsci.plugins.artifact.deployment.steps.CpsDeployTask;
+import org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStep;
 import org.jenkinsci.plugins.artifact.deployment.steps.DeploymentExecChecks;
 import org.jenkinsci.plugins.artifact.deployment.steps.Messages;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
@@ -43,12 +41,11 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.Util;
 
+import static org.jenkinsci.plugins.artifact.deployment.steps.DeployArtifactsStep.GROOVY_VAR__PIPE_TASKS;
+
 public class SectionTask implements DeploymentTask {
 
 	private static final long serialVersionUID = 1L;
-
-	public static final String GROOVY_SCRIPT__TASK_BODY = "DeploySectionTaskBody.groovy";
-	public static final String GROOVY_VAR__PIPE_TASKS = "deploymentPipeTasks";
 
 	protected String name;
 	protected List<CpsCheck> requirements = null;
@@ -161,16 +158,7 @@ public class SectionTask implements DeploymentTask {
 				tasks.add(task);
 			}
 
-			final InputStream resource = getClass().getResourceAsStream(GROOVY_SCRIPT__TASK_BODY);
-			if (resource == null) {
-				throw new IllegalStateException("Missing " + GROOVY_SCRIPT__TASK_BODY);
-			}
-
-			final Script body;
-			try (InputStreamReader reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
-				body = execution.getShell()
-						.parse(reader, GROOVY_SCRIPT__TASK_BODY);
-			}
+			final Script body = DeployArtifactsStep.loadScript(execution);
 
 			// Internal script variables; never populate the Jenkinsfile's
 			// binding with the deployment task list.
