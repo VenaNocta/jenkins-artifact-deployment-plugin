@@ -34,8 +34,10 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundle;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundles;
+import org.jenkinsci.plugins.workflow.actions.TagsAction;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
+import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
@@ -150,6 +152,28 @@ public abstract class ACpsDeployTask implements CpsDeployTask {
 		if (t != null)
 			record.setThrown(t);
 		getLogger().log(record);
+	}
+
+	// --- FlowNode Tools
+
+	public static void markFlowNodeAsSkipped(final FlowNode node) throws IOException {
+		addTagToFlowNode(node, "STAGE_STATUS", "SKIPPED_FOR_CONDITIONAL");
+	}
+
+	public static void addTagToFlowNode(final FlowNode node, final String tagName, final String tagValue)
+			throws IOException {
+		if (node == null)
+			return;
+
+		TagsAction tagsAction = node.getAction(TagsAction.class);
+		if (tagsAction == null) {
+			tagsAction = new TagsAction();
+			tagsAction.addTag(tagName, tagValue);
+			node.addAction(tagsAction);
+		} else if (tagsAction.getTagValue(tagName) == null) {
+			tagsAction.addTag(tagName, tagValue);
+		}
+		node.save();
 	}
 
 	// --- Jenkins Tools

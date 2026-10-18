@@ -222,15 +222,18 @@ public class SonatypeCentralPortalUploader extends ACpsDeployTask {
 		}
 
 		final String namespace = StringUtils.trimToNull(repoConfig.getNamespace());
-		if (namespace == null)
-			throw new AbortException("Namespace not set!");
+		if (namespace == null) {
+			getContext().onFailure(new AbortException("Namespace not set!"));
+			return true;
+		}
 
 		final URIBuilder uriBuilder = new URIBuilder(repoConfig.getURI());
 		try {
 			uriBuilder.toURI();
 		} catch (URISyntaxException e) {
 			// theoretically impossible!
-			throw new AbortException("Invalid Server address!");
+			getContext().onFailure(new AbortException("Invalid Server address!"));
+			return true;
 		}
 
 		final BasicCredentialsProvider credProvider = new BasicCredentialsProvider();

@@ -17,8 +17,8 @@ package org.jenkinsci.plugins.artifact.deployment.repos;
 
 import java.util.UUID;
 
-import org.jenkinsci.plugins.artifact.deployment.config.DeploymentTask;
 import org.jenkinsci.plugins.artifact.deployment.steps.CpsDeployTask;
+import org.jenkinsci.plugins.artifact.deployment.tasks.DeploymentTask;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.GlobalRepositoryIndex;
 import org.jenkinsci.plugins.identifieddata.api.IdentifierUtils;

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.artifact.deployment.tasks.DeploymentTask;
 import org.jenkinsci.plugins.identifieddata.api.IdentifiedByUUID;
 import org.jenkinsci.plugins.identifieddata.api.IdentifierUtils;
 import org.jenkinsci.plugins.identifieddata.api.NamedRefUUID;
@@ -36,6 +37,7 @@ import org.kohsuke.stapler.verb.POST;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Describable;
@@ -90,12 +92,12 @@ public class PipeConfig
 	}
 
 	@DataBoundSetter
-	public void setName(@NonNull final String name) {
+	public void setName(@Nullable final String name) {
 		this.name = Util.fixEmptyAndTrim(name);
 	}
 
 	@DataBoundSetter
-	public void setDescription(@NonNull final String description) {
+	public void setDescription(@Nullable final String description) {
 		this.description = Util.fixEmptyAndTrim(description);
 	}
 

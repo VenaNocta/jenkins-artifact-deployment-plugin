@@ -32,8 +32,8 @@ import org.jenkinsci.plugins.artifact.bundle.context.BundleContext;
 import org.jenkinsci.plugins.artifact.bundle.context.Bundles;
 import org.jenkinsci.plugins.artifact.bundle.steps.BundleStepExecution;
 import org.jenkinsci.plugins.artifact.deployment.config.DeploymentPipeIndex;
-import org.jenkinsci.plugins.artifact.deployment.config.DeploymentTask;
 import org.jenkinsci.plugins.artifact.deployment.config.PipeConfig;
+import org.jenkinsci.plugins.artifact.deployment.tasks.DeploymentTask;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.cps.CpsStepContext;
 import org.jenkinsci.plugins.workflow.cps.CpsThread;
@@ -192,10 +192,9 @@ public class DeployArtifactsStep extends Step implements Serializable {
 
 		@Override
 		public boolean start() throws Exception {
-			if (!(getContext() instanceof CpsStepContext)) {
+			final CpsStepContext context = getContext() instanceof CpsStepContext ctx ? ctx : null;
+			if (context == null)
 				throw new IllegalStateException("deployArtifacts requires workflow-cps");
-			}
-			final CpsStepContext context = (CpsStepContext) getContext();
 			final CpsThread thread = CpsThread.current();
 			if (thread == null) {
 				throw new IllegalStateException("No current CPS thread");
@@ -236,6 +235,8 @@ public class DeployArtifactsStep extends Step implements Serializable {
 					this.pipe.getUuid(), this.step.getOptions(), getSelectedBundle());
 
 			this.cpsBody = context.newBodyInvoker(group.export(body), true)
+					.withDisplayName(this.step.getDescriptor()
+							.getDisplayName() + " » Tasks")
 					.withContext(data)
 					.withCallback(BodyExecutionCallback.wrap(getContext()))
 					.start();

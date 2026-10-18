@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.artifact.deployment.config;
+package org.jenkinsci.plugins.artifact.deployment.tasks;
 
 import java.io.Serializable;
 
 import org.jenkinsci.plugins.artifact.deployment.steps.CpsDeployTask;
 
-import hudson.ExtensionPoint;
 import hudson.model.Describable;
 
-public interface DeploymentTask extends Describable<DeploymentTask>, ExtensionPoint, Serializable {
+public interface DeploymentTask extends Describable<DeploymentTask>, Serializable {
 
 	public CpsDeployTask buildCpsTask();
 }

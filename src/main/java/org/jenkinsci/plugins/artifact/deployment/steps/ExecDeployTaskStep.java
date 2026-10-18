@@ -16,8 +16,11 @@
 package org.jenkinsci.plugins.artifact.deployment.steps;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
+
+import org.jenkinsci.plugins.artifact.deployment.tasks.CpsCheck;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.Step;
@@ -26,6 +29,7 @@ import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.Extension;
+import hudson.model.Result;
 
 public class ExecDeployTaskStep extends Step implements Serializable {
 
@@ -60,19 +64,52 @@ public class ExecDeployTaskStep extends Step implements Serializable {
 
 		@Override
 		public boolean start() throws Exception {
+			final StepContext context = getContext();
 			// The context marker must be supplied by the trusted parent.
-			final DeploymentExecData data = getContext().get(DeploymentExecData.class);
+			final DeploymentExecData data = context.get(DeploymentExecData.class);
 			if (data == null) {
 				throw new SecurityException(Messages.ExecDeployTask_Exec_ERR_ContextNotTrusted());
 			}
 
 			// Label this step's flow node with the configured task name.
-			final FlowNode node = getContext().get(FlowNode.class);
-			if (node != null) {
-				node.addAction(new LabelAction(this.task.getDisplayName()));
+			final FlowNode node = context.get(FlowNode.class);
+			final String displayName = this.task.getDisplayName();
+			if (node != null && displayName != null) {
+				node.addAction(new LabelAction(displayName));
 			}
 
+			// -- check requirements
+			final DeploymentExecChecks checksDto = context.get(DeploymentExecChecks.class);
+			if (checksDto != null) {
+				boolean checksFailed = false;
+				for (Iterator<CpsCheck> i = checksDto.getChecks()
+						.iterator(); i.hasNext();) {
+					final CpsCheck cpsCheck = i.next();
+					if (cpsCheck == null)
+						continue;
+					if (checksFailed = !cpsCheck.check(context, data))
+						break;
+				}
+				if (checksFailed) {
+					if (checksDto.getSkipOnFail()) {
+						ACpsDeployTask.markFlowNodeAsSkipped(node);
+						context.onSuccess(null);
+						return true;
+					} else {
+						context.setResult(Result.FAILURE);
+						return true;
+					}
+				}
+			}
+
+			// -- exec Task
 			return this.task.exec(getContext(), data);
+		}
+
+		@Override
+		public void stop(final Throwable cause) throws Exception {
+			this.task.stop(cause);
+			super.stop(cause);
 		}
 	}
 

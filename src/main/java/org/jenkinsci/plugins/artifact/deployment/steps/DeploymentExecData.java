@@ -48,4 +48,8 @@ public class DeploymentExecData implements Serializable {
 	public Map<String, Serializable> getOptions() {
 		return this.options;
 	}
+
+	public DeploymentExecData copyWithBundle(final Bundle bundle) {
+		return new DeploymentExecData(this.pipeId, this.options, bundle);
+	}
 }

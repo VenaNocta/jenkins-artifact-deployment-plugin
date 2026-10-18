@@ -25,4 +25,8 @@ public interface CpsDeployTask extends Serializable {
 
 	public boolean exec(StepContext context, DeploymentExecData data) throws Exception;
 
+	public default void stop(final Throwable cause) throws Exception {
+		// override for block tasks otherwise ignore? ¯\_(ツ)_/¯
+	}
+
 }
