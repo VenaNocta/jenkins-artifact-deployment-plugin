@@ -24,6 +24,6 @@ import hudson.model.Describable;
 
 public interface CpsCheck extends Describable<CpsCheck>, Serializable {
 
-	public boolean check(StepContext context, DeploymentExecData data) throws Exception;
+	public void check(StepContext context, DeploymentExecData data) throws Throwable;
 
 }

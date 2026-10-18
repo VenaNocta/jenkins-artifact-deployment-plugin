@@ -28,8 +28,9 @@ import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.kohsuke.stapler.DataBoundConstructor;
+
 import hudson.Extension;
-import hudson.model.Result;
+import hudson.model.TaskListener;
 
 public class ExecDeployTaskStep extends Step implements Serializable {
 
@@ -81,22 +82,31 @@ public class ExecDeployTaskStep extends Step implements Serializable {
 			// -- check requirements
 			final DeploymentExecChecks checksDto = context.get(DeploymentExecChecks.class);
 			if (checksDto != null) {
-				boolean checksFailed = false;
+				Throwable checkError = null;
 				for (Iterator<CpsCheck> i = checksDto.getChecks()
 						.iterator(); i.hasNext();) {
 					final CpsCheck cpsCheck = i.next();
 					if (cpsCheck == null)
 						continue;
-					if (checksFailed = !cpsCheck.check(context, data))
+					try {
+						cpsCheck.check(context, data);
+					} catch (Throwable e) {
+						checkError = e;
 						break;
+					}
 				}
-				if (checksFailed) {
+				if (checkError != null) {
 					if (checksDto.getSkipOnFail()) {
 						ACpsDeployTask.markFlowNodeAsSkipped(node);
+						context.get(TaskListener.class)
+								.getLogger()
+								.println("WARNING: " + checkError.getMessage());
 						context.onSuccess(null);
 						return true;
 					} else {
-						context.setResult(Result.FAILURE);
+						context.get(TaskListener.class)
+								.error(checkError.getMessage());
+						context.onFailure(checkError);
 						return true;
 					}
 				}
