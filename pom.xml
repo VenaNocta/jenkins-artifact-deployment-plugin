@@ -179,6 +179,11 @@
 			<artifactId>cloudbees-folder</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>org.jenkins-ci.plugins.workflow</groupId>
+			<artifactId>workflow-multibranch</artifactId>
+			<optional>true</optional>
+		</dependency>
 
 		<!-- non packaged dependencies -->
 
