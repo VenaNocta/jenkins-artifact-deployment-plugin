@@ -109,7 +109,7 @@ public class ResultCpsCheck implements CpsCheck {
 				return;
 			break;
 		}
-		throw new AbortException("Check: Result not " + this.matchType + " " + result.toString());
+		throw new AbortException("Check: Result not " + this.matchType + " " + value.toString());
 	}
 
 	@Extension
