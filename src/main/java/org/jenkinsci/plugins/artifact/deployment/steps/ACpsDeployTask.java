@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -252,7 +251,7 @@ public abstract class ACpsDeployTask implements CpsDeployTask {
 				if (obj != null) {
 					if (obj instanceof String s)
 						obj = s.trim();
-					data.putIfAbsent(key, obj);
+					data.putIfAbsent(ref.getKey(), obj);
 					break;
 				}
 			}
