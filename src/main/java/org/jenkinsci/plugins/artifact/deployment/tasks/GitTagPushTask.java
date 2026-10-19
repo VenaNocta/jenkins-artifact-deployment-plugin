@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -44,6 +44,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.plugins.git.GitException;
 import hudson.plugins.git.GitSCM;
 import jenkins.branch.Branch;
 import jenkins.util.VirtualFile;
@@ -134,6 +135,13 @@ public class GitTagPushTask implements DeploymentTask {
 	public static class CpsTask extends ACpsDeployTask {
 
 		private static final long serialVersionUID = 1L;
+
+		public static final Pattern PATTERN_GIT_AUTH_FAILURE = Pattern
+				.compile("(?i)fatal:\\s*Authentication failed for");
+		public static final Pattern PATTERN_GIT_ARCHIVED = Pattern
+				.compile("(?i)stderr:\\s*ERROR:\\s*This repository was archived so it is read-only");
+		public static final Pattern PATTERN_GIT_DUPLICATE_TAG = Pattern
+				.compile("(?i)hint:\\s*Updates were rejected because the tag already exists in the remote");
 
 		private final List<MetadataEntry> entries;
 		private final String triggerKey;
@@ -230,14 +238,38 @@ public class GitTagPushTask implements DeploymentTask {
 			git.tag(tag, resolveText(data, this.comment));
 
 			// push tag
-			git.push()
-					.to(uri)
-					.ref("refs/tags/" + tag)
-					.force(this.force)
-					.execute();
+			try {
+				git.push()
+						.to(uri)
+						.ref("refs/tags/" + tag)
+						.force(this.force)
+						.execute();
+			} catch (GitException e) {
+				final String error = e.getMessage();
+				boolean warn = false;
+				final String msg;
+				if (PATTERN_GIT_AUTH_FAILURE.matcher(error)
+						.find())
+					msg = "Authentication failed!";
+				else if (PATTERN_GIT_ARCHIVED.matcher(error)
+						.find())
+					msg = "Repository is archived! It can not be updated!";
+				else if (PATTERN_GIT_DUPLICATE_TAG.matcher(error)
+						.find()) {
+					warn = true;
+					msg = "Tag already exists!";
+				} else
+					msg = error;
 
-			listener.getLogger()
-					.println("Successfully pushed tag: " + tag);
+				if (warn) {
+					log(Level.WARNING, "Failed to push tag: " + tag, null);
+					log(Level.WARNING, msg, null);
+					return;
+				}
+				log(Level.SEVERE, "Failed to push tag: " + tag, null);
+				throw new AbortException(getDisplayName() + ": " + msg);
+			}
+			log(Level.INFO, "Successfully pushed tag: " + tag, null);
 		}
 	}
 }
