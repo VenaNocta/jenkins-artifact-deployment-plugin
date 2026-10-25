@@ -19,36 +19,19 @@ import java.util.Set;
 
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryTypeProvider;
+import org.jenkinsci.plugins.artifact.lifecycle.config.WithUploadSupport;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 
+@Extension
 // TODO bind to the existence of an Uploader!
-public interface DeploymentRepository extends ArtifactRepository {
+public class DeployTargetTypeProvider implements ArtifactRepositoryTypeProvider {
 
-	@CheckForNull
-	public String getCredentialId();
-
-	// some implementations support multiple types!
-	public default boolean hasDeploymentSupport() {
-		return true;
-	}
-
-	public static boolean isSupported(final ArtifactRepository repository) {
-		if (repository instanceof DeploymentRepository repo)
-			return repo.hasDeploymentSupport();
-		return false;
-	}
-
-	@Extension
-	public static class TypeProvider implements ArtifactRepositoryTypeProvider {
-
-		@Override
-		public Set<String> getProviderTypes(final ArtifactRepository repository) {
-			// TODO bind to the existence of an Uploader!
-			if (DeploymentRepository.isSupported(repository))
-				return Set.of("Deploy-Target");
-			return Set.of();
-		}
+	@Override
+	public Set<String> getProviderTypes(final ArtifactRepository repository) {
+		// TODO bind to the existence of an Uploader!
+		if (WithUploadSupport.isSupported(repository))
+			return Set.of("Deploy-Target");
+		return Set.of();
 	}
 }

@@ -168,7 +168,7 @@ public class SonatypeCentralPortalUploader extends ACpsDeployTask {
 
 	protected void useCreds(Function<StandardUsernamePasswordCredentials, Boolean> consumer)
 			throws IOException, InterruptedException {
-		final String credentialId = repoConfig.getCredentialId();
+		final String credentialId = repoConfig.getUploadCredentialId();
 		if (credentialId == null)
 			return;
 		super.useCreds(StandardUsernamePasswordCredentials.class, credentialId, consumer);

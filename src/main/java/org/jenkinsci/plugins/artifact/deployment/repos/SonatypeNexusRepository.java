@@ -35,11 +35,12 @@ import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.artifact.deployment.config.DeploymentRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.AArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryDescriptor;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryTypeProvider;
+import org.jenkinsci.plugins.artifact.lifecycle.config.WithDownloadSupport;
+import org.jenkinsci.plugins.artifact.lifecycle.config.WithUploadSupport;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
@@ -70,7 +71,7 @@ import hudson.util.ListBoxModel.Option;
 import jenkins.model.Jenkins;
 import net.runeduniverse.lib.utils.common.URIBuilder;
 
-public class SonatypeNexusRepository extends AArtifactRepository implements DeploymentRepository {
+public class SonatypeNexusRepository extends AArtifactRepository implements WithDownloadSupport, WithUploadSupport {
 
 	private static final long serialVersionUID = 1L;
 
@@ -101,11 +102,6 @@ public class SonatypeNexusRepository extends AArtifactRepository implements Depl
 		this.credentialId = Util.fixEmptyAndTrim(credentialId);
 	}
 
-	@Override
-	public ArtifactRepository adapter(final Set<Class<?>> types) {
-		return SonatypeNexusRepositoryAdapterFactory.buildProxy(this, types);
-	}
-
 	public URI getUri() {
 		return this.uri;
 	}
@@ -130,7 +126,17 @@ public class SonatypeNexusRepository extends AArtifactRepository implements Depl
 	}
 
 	@Override
-	public boolean hasDeploymentSupport() {
+	public String getDownloadCredentialId() {
+		return getCredentialId();
+	}
+
+	@Override
+	public String getUploadCredentialId() {
+		return getCredentialId();
+	}
+
+	@Override
+	public boolean hasUploadSupport() {
 		// TODO if "hosted".equals(type) => true else false
 		return true;
 	}

@@ -93,7 +93,7 @@ public class SonatypeNexusUploader extends ACpsDeployTask {
 
 	protected void useCreds(Function<StandardUsernamePasswordCredentials, Boolean> consumer)
 			throws IOException, InterruptedException {
-		final String credentialsId = this.repoConfig.getCredentialId();
+		final String credentialsId = this.repoConfig.getUploadCredentialId();
 		if (credentialsId == null)
 			return;
 		super.useCreds(StandardUsernamePasswordCredentials.class, credentialsId, consumer);
@@ -113,7 +113,7 @@ public class SonatypeNexusUploader extends ACpsDeployTask {
 		if (repo == null)
 			throw new AbortException("Repository not selected!");
 
-		if (!this.repoConfig.hasDeploymentSupport())
+		if (!this.repoConfig.hasUploadSupport())
 			throw new AbortException(
 					"The selected Repository (" + this.repoConfig.getRepo() + ") does not allow uploads!");
 

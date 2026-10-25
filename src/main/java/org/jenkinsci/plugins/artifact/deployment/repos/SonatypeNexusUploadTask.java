@@ -71,7 +71,7 @@ public class SonatypeNexusUploadTask implements DeploymentTask {
 	}
 
 	public static boolean isSupported(final ArtifactRepository repository) {
-		return repository instanceof SonatypeNexusRepository nexusRepo && nexusRepo.hasDeploymentSupport();
+		return repository instanceof SonatypeNexusRepository nexusRepo && nexusRepo.hasUploadSupport();
 	}
 
 	@Extension

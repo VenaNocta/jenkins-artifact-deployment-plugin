@@ -16,16 +16,18 @@
 package org.jenkinsci.plugins.artifact.deployment.repos;
 
 import java.net.URI;
-import java.util.Set;
 import java.util.UUID;
 
-import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryAdapterBuilder;
+import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepository;
+import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryAdapter;
+import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryAdapterFactory;
+import org.jenkinsci.plugins.artifact.lifecycle.config.WithUploadSupport;
 import org.jenkinsci.plugins.artifact.lifecycle.maven.config.Maven2Repository;
 import org.jenkinsci.plugins.variant.OptionalExtension;
 
 import net.runeduniverse.lib.utils.common.URIBuilder;
 
-public class SonatypeNexusMaven2Adapter implements Maven2Repository {
+public class SonatypeNexusMaven2Adapter implements ArtifactRepositoryAdapter, Maven2Repository, WithUploadSupport {
 
 	private static final long serialVersionUID = 1L;
 
@@ -33,6 +35,11 @@ public class SonatypeNexusMaven2Adapter implements Maven2Repository {
 
 	public SonatypeNexusMaven2Adapter(final SonatypeNexusRepository original) {
 		this.original = original;
+	}
+
+	@Override
+	public ArtifactRepository origin() {
+		return this.original;
 	}
 
 	@Override
@@ -62,16 +69,33 @@ public class SonatypeNexusMaven2Adapter implements Maven2Repository {
 	}
 
 	@Override
-	public String getCredentialId() {
-		return this.original.getCredentialId();
+	public String getDownloadCredentialId() {
+		return this.original.getDownloadCredentialId();
+	}
+
+	@Override
+	public String getUploadCredentialId() {
+		return this.original.getUploadCredentialId();
 	}
 
 	@OptionalExtension(requirePlugins = { "artifact-lifecycle-maven-api" })
-	public static class Factory implements SonatypeNexusRepositoryAdapterFactory {
+	public static class Factory implements ArtifactRepositoryAdapterFactory<Maven2Repository> {
 
 		@Override
-		public void build(ArtifactRepositoryAdapterBuilder<SonatypeNexusRepository> builder, Set<Class<?>> types) {
-			builder.withHandler(new SonatypeNexusMaven2Adapter(builder.getOriginal()), Maven2Repository.class);
+		public Class<Maven2Repository> targetType() {
+			return Maven2Repository.class;
+		}
+
+		@Override
+		public Class<?> precursorType() {
+			return SonatypeNexusRepository.class;
+		}
+
+		@Override
+		public Maven2Repository adapt(final ArtifactRepository repository) {
+			if (repository instanceof SonatypeNexusRepository repo)
+				return new SonatypeNexusMaven2Adapter(repo);
+			return null;
 		}
 	}
 }

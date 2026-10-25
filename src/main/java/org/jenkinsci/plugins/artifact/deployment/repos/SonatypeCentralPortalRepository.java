@@ -29,11 +29,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.artifact.deployment.config.DeploymentRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.AArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepository;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryDescriptor;
 import org.jenkinsci.plugins.artifact.lifecycle.config.ArtifactRepositoryTypeProvider;
+import org.jenkinsci.plugins.artifact.lifecycle.config.WithUploadSupport;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
@@ -63,7 +63,7 @@ import hudson.util.ListBoxModel.Option;
 import jenkins.model.Jenkins;
 import net.runeduniverse.lib.utils.common.URIBuilder;
 
-public class SonatypeCentralPortalRepository extends AArtifactRepository implements DeploymentRepository {
+public class SonatypeCentralPortalRepository extends AArtifactRepository implements WithUploadSupport {
 
 	private static final Logger LOGGER = Logger.getLogger(SonatypeCentralPortalRepository.class.getName());
 
@@ -108,7 +108,7 @@ public class SonatypeCentralPortalRepository extends AArtifactRepository impleme
 	}
 
 	@Override
-	public String getCredentialId() {
+	public String getUploadCredentialId() {
 		return this.credentialId;
 	}
 
