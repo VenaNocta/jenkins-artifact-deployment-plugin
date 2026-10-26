@@ -33,6 +33,7 @@ import org.jenkinsci.plugins.artifact.lifecycle.ui.GlobalArtifactLifecycleConfig
 import org.jenkinsci.plugins.identifieddata.api.IdentifiedByUUID;
 import org.jenkinsci.plugins.identifieddata.api.IdentifierUtils;
 import org.jenkinsci.plugins.identifieddata.api.NameResolver;
+import org.jenkinsci.plugins.identifieddata.api.ReferenceableByName;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -65,7 +66,7 @@ public class DeploymentPipeIndex extends GlobalConfiguration {
 		super.load();
 		this.pipeMap.clear();
 		this.pipes.stream()
-				.forEachOrdered(t -> this.pipeMap.put(t.getUuid(), t));
+				.forEach(t -> this.pipeMap.put(t.getUuid(), t));
 	}
 
 	public PipeConfig getPipeById(final UUID uuid) {
@@ -78,13 +79,19 @@ public class DeploymentPipeIndex extends GlobalConfiguration {
 
 	// used by jelly & JCasC
 	public List<PipeConfig> getPipes() {
-		return new ArrayList<>(this.pipeMap.values());
+		return this.pipeMap.values()
+				.stream()
+				.sorted(ReferenceableByName.COMPARE_BY_NAME_WITH_COMMENTS)
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	// used by jelly
 	public List<PipeConfig> getPipes(final Item context) {
 		// TODO actually check the owner Item!
-		return new ArrayList<>(this.pipeMap.values());
+		return this.pipeMap.values()
+				.stream()
+				.sorted(ReferenceableByName.COMPARE_BY_NAME_WITH_COMMENTS)
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	@DataBoundSetter
