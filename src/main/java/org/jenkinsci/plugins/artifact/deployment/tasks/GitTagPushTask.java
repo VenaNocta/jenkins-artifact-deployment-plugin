@@ -263,7 +263,7 @@ public class GitTagPushTask implements DeploymentTask {
 
 				if (warn) {
 					log(Level.WARNING, "Failed to push tag: " + tag, null);
-					log(Level.WARNING, msg, null);
+					log(Level.WARNING, "> " + msg, null);
 					return;
 				}
 				log(Level.SEVERE, "Failed to push tag: " + tag, null);

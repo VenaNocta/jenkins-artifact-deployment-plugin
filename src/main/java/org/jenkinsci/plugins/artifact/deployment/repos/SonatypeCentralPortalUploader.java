@@ -82,11 +82,11 @@ import net.runeduniverse.lib.utils.logging.log.api.CompoundTreeStyle;
 public class SonatypeCentralPortalUploader extends ACpsDeployTask {
 
 	public static final String[] OPTION_PUBLISHING_TYPE = //
-			new String[] { "publishing.type", "publishing.mode" };
+			new String[] { "sonatype.central.publishing.type", "sonatype.central.publishing.mode" };
 	public static final String[] OPTION_VALIDATION_RETRIES = //
-			new String[] { "validation.retries" };
+			new String[] { "sonatype.central.validation.retries", "validation.retries" };
 	public static final String[] OPTION_VALIDATION_TIMEOUT = //
-			new String[] { "validation.timeout" };
+			new String[] { "sonatype.central.validation.timeout", "validation.timeout" };
 	public static final String[] METADATA_GROUPID = //
 			new String[] { "maven.groupId", "groupId" };
 	public static final String[] METADATA_ARTIFACTID = //
@@ -168,7 +168,7 @@ public class SonatypeCentralPortalUploader extends ACpsDeployTask {
 
 	protected void useCreds(Function<StandardUsernamePasswordCredentials, Boolean> consumer)
 			throws IOException, InterruptedException {
-		final String credentialId = repoConfig.getUploadCredentialId();
+		final String credentialId = this.repoConfig.getUploadCredentialId();
 		if (credentialId == null)
 			return;
 		super.useCreds(StandardUsernamePasswordCredentials.class, credentialId, consumer);
@@ -221,13 +221,13 @@ public class SonatypeCentralPortalUploader extends ACpsDeployTask {
 			return true;
 		}
 
-		final String namespace = StringUtils.trimToNull(repoConfig.getNamespace());
+		final String namespace = StringUtils.trimToNull(this.repoConfig.getNamespace());
 		if (namespace == null) {
 			getContext().onFailure(new AbortException("Namespace not set!"));
 			return true;
 		}
 
-		final URIBuilder uriBuilder = new URIBuilder(repoConfig.getURI());
+		final URIBuilder uriBuilder = new URIBuilder(this.repoConfig.getURI());
 		try {
 			uriBuilder.toURI();
 		} catch (URISyntaxException e) {

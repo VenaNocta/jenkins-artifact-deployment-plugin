@@ -224,6 +224,9 @@ public class DeployArtifactsStep extends Step implements Serializable {
 			if (thread == null) {
 				throw new IllegalStateException("No current CPS thread");
 			}
+			context.get(TaskListener.class)
+					.getLogger()
+					.println(Messages.DeployArtifacts_Exec_DeployingTo(this.pipe.getUuid()));
 
 			final CpsThreadGroup group = thread.getGroup();
 			final CpsFlowExecution execution = thread.getExecution();

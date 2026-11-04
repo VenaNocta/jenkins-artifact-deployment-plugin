@@ -1,0 +1,33 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form"
+	xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+	<!-- page -->
+	<f:entry title="flatten file-tree of archived files"
+		field="flattenFileTree">
+		<f:checkbox default="true" />
+	</f:entry>
+	<div style="display:flex; gap:20px; width:100%;">
+		<div style="flex:0 0 auto; min-width:50%">
+			<f:entry title="Archive Path" field="archivePath">
+				<f:textbox />
+			</f:entry>
+		</div>
+		<div style="flex:1; min-width:0;">
+			<f:entry title="Archive Name" field="archiveName">
+				<f:textbox default="artifacts" />
+			</f:entry>
+		</div>
+	</div>
+	<div style="display:flex; gap:20px; width:100%;">
+		<div style="flex:0 0 auto; min-width:20%">
+			<f:entry title=".tar.xz" field="tarXz">
+				<f:checkbox default="true" />
+			</f:entry>
+		</div>
+		<div style="flex:0 0 auto; min-width:20%">
+			<f:entry title=".zip" field="zip">
+				<f:checkbox default="true" />
+			</f:entry>
+		</div>
+	</div>
+</j:jelly>

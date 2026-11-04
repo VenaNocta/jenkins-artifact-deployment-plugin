@@ -57,7 +57,7 @@ public class MatchBranchDefaultCpsCheck implements CpsCheck {
 
 		@Override
 		public String getDisplayName() {
-			return "Branch Check: Active == Default";
+			return "Branch Check: Only on Default Branch";
 		}
 	}
 }
